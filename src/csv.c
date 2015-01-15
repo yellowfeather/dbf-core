@@ -20,6 +20,10 @@
 static char CSVFileType = 'C';
 static char CSVSeparator = ',';
 static char CSVEnclosure = '"';
+
+static char CarriageReturn = '\r';
+static char NewLine = '\n';
+
 static int CSVTableStructure = 1;
 
 /* setCSVSep() {{{
@@ -130,7 +134,7 @@ writeCSVLine(FILE *fp, P_DBF *p_dbf,
 		ptr = begin;
 		needsencl = 0;
 		while(!needsencl && ptr <= end) {
-			if(*ptr == CSVSeparator || *ptr == CSVEnclosure)
+			if(*ptr == CSVSeparator || *ptr == CSVEnclosure || *ptr == CarriageReturn || *ptr == NewLine)
 				needsencl = 1;
 			ptr++;
 		}
