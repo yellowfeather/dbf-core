@@ -2,8 +2,8 @@
 # Makefile.rules for dbf
 #
 # History:
-# $Log$
-# Revision 1.8  2004-04-25 16:02:51  rollinhand
+# $Log: Makefile.rules,v $
+# Revision 1.8  2004/04/25 16:02:51  rollinhand
 # removed iodbf.* from dependings
 #
 # Revision 1.7  2003/12/16 19:15:08  rollinhand
