@@ -23,6 +23,7 @@
 #include "csv.h"
 #include "sql.h"
 #include "odbf.h"
+#include "hash.h"
 
 static struct DB_FSIZE *fsz;
 
@@ -332,6 +333,11 @@ struct options {
 	{
 		"--csv", writeCSVHeader, NULL, writeCSVLine, ARG_OUTPUT, ARG_CLASS_OUTPUT,
 		"{filename} -- convert file into \"comma separated values\"",
+		NULL
+	},
+	{
+		"--hash", NULL, NULL, writeHashLine, ARG_OUTPUT, ARG_CLASS_OUTPUT,
+		"{filename} -- MD5 hash each line",
 		NULL
 	},
 	{
