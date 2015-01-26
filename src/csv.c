@@ -97,7 +97,8 @@ writeCSVHeader (FILE *fp, P_DBF *p_dbf,
 int
 writeCSVLine(FILE *fp, P_DBF *p_dbf,
     const unsigned char *value, int record_length,
-    const char *in /* unused */, const char *out /* unused */)
+    const char *in /* unused */, const char *out /* unused */,
+    const unsigned int dataset_deleted)
 {
 	int i, columns;
 	int needsencl;

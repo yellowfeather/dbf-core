@@ -1,5 +1,5 @@
 /****************************************************************************
- * hash.c
+ * index.c
  ****************************************************************************
  * dbf Reader and Converter for dBASE files
  * Implementation
@@ -8,40 +8,37 @@
  * Modifications: Uwe Steinmann <uwe@steinmann.cx>
  *
  ****************************************************************************
- * Functions to write hash
+ * Functions to write index
  ***************************************************************************/
 
 #include <string.h>
 #include <libdbf/libdbf.h>
-#include "hash.h"
-#include "md5.h"
+#include "index.h"
 
-static const int MD5_DIGEST_LENGTH = 16;
+static int row_number = 0;
 
-/* writeHashLine {{{
+int
+writeIndexHeader (FILE *fp, P_DBF *p_dbf,
+    const char *in /* __unused */, const char *out /* __unused */)
+{
+  row_number = 0;
+  return 0;
+}
+
+/* writeIndexLine {{{
  * creates a line in the hash document for each data set
  */
 int
-writeHashLine(FILE *fp, P_DBF *p_dbf,
+writeIndexLine(FILE *fp, P_DBF *p_dbf,
     const unsigned char *value, int record_length,
     const char *in /* unused */, const char *out /* unused */,
     const unsigned int dataset_deleted)
 {
-    struct md5_ctx ctx;
-    unsigned char digest[MD5_DIGEST_LENGTH];
+  if (dataset_deleted != 1) {
+    fprintf(fp, "%08d\n", row_number);
+  }
 
-    md5_init(&ctx);
-    ctx.size = record_length;
-    memcpy(ctx.buf, value, record_length);
-    md5_update(&ctx);
-    md5_final(digest, &ctx);
+  ++row_number;
 
-    int i;
-	for (i = 0; i < 16; ++i) {
-		fprintf(fp, "%02x", digest[i]);
-	}
-
-	fputs("\n", fp);
-
-	return 0;
+  return 0;
 }

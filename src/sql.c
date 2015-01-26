@@ -247,7 +247,8 @@ int writeSQLFooter (FILE *fp, P_DBF *p_dbf,
 int
 writeSQLLine (FILE *fp, P_DBF *p_dbf, 
     const unsigned char *value, int record_length,
-    const char *filename, const char *export_filename)
+    const char *filename, const char *export_filename,
+    const unsigned int dataset_deleted)
 {
 	int i, columns;
 

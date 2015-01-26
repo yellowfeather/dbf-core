@@ -14,6 +14,7 @@
 #include "dbf.h"
 
 int writeHashLine (FILE *fp, P_DBF * p_dbf, const unsigned char *value,
-    int header_length, const char *input, const char *output);
+    int header_length, const char *input, const char *output,
+    const unsigned int dataset_deleted);
 
 #endif

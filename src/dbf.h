@@ -76,6 +76,7 @@ typedef int	(*footerMethod)(FILE *output, P_DBF * p_dbf,
 
 typedef int	(*lineMethod)(FILE *output, P_DBF * p_dbf,
     const unsigned char *value, int header_length,
-    const char *filename, const char *export_filename);
+    const char *filename, const char *export_filename,
+    const unsigned int dataset_deleted);
 
 #endif

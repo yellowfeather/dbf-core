@@ -20,5 +20,6 @@ int setCSVSep (FILE *fp, P_DBF * p_dbf,
 int writeCSVHeader (FILE *fp, P_DBF * p_dbf,
     const char *input, const char *output);
 int writeCSVLine (FILE *fp, P_DBF * p_dbf, const unsigned char *value,
-    int header_length, const char *input, const char *output);
+    int header_length, const char *input, const char *output,
+    const unsigned int dataset_deleted);
 #endif

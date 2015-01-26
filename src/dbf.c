@@ -24,6 +24,7 @@
 #include "sql.h"
 #include "odbf.h"
 #include "hash.h"
+#include "index.h"
 
 static struct DB_FSIZE *fsz;
 
@@ -225,7 +226,12 @@ static int
 setKeepDel (FILE *output, P_DBF *p_dbf,
     const char *filename, const char *level)
 {
-	keep_deleted = 1;
+	if (level[1] != '\0' || level[0] < '0' || level[0] > '1') {
+		fprintf(stderr, _("Invalid keepdel value ``%s''. Must be either 0 or 1"), level);
+		fprintf(stderr, "\n");
+		return 1;
+	}
+	keep_deleted = level[0] - '0';
 	return 0;
 }
 /* }}} */
@@ -276,7 +282,8 @@ writeINFOHdr(FILE *output, P_DBF *p_dbf,
 static int
 printDBF(FILE *output, P_DBF *p_dbf,
     const unsigned char *record, int header_length,
-    const char *filename, const char *export_filename)
+    const char *filename, const char *export_filename,
+    const unsigned int dataset_deleted)
 {
 	int i, columns;
 	const char *value;
@@ -341,6 +348,11 @@ struct options {
 		NULL
 	},
 	{
+		"--index", writeIndexHeader, NULL, writeIndexLine, ARG_OUTPUT, ARG_CLASS_OUTPUT,
+		"{filename} -- generate index file",
+		NULL
+	},
+	{
 		"--dbf", writeDBFHeader, writeDBFFooter, writeDBFLine, ARG_OUTPUT, ARG_CLASS_OUTPUT,
 		"{filename} -- convert file into dBASE file",
 		NULL
@@ -396,9 +408,9 @@ struct options {
 		NULL
 	},
 	{
-		"--keepdel", setKeepDel, NULL, NULL, ARG_NONE, ARG_CLASS_SET,
-		"output also deleted records",
-		"to skip deleted records"
+		"--keepdel", setKeepDel, NULL, NULL, ARG_OPTION, ARG_CLASS_SET,
+		"0 or 1 -- whether to output deleted records",
+		"0"
 	},
 	{
 		"--quiet", setQuiet, NULL, NULL, ARG_NONE, ARG_CLASS_SET,
@@ -682,12 +694,12 @@ main(int argc, char *argv[])
 			 * reached without notification by read. The end of each dBASE file is
 			 * marked with a dot.
 			 */
-			if ( (!dataset_deleted || keep_deleted == 1) && record[0] != 0x1A) {
+			if ( (dataset_deleted == 0 || keep_deleted == 1) && record[0] != 0x1A) {
 				/* automatically convert options */
 				if (convert)
 					cp850andASCIIconvert(record);
 				writeLine(output, p_dbf, record+1, record_length-1,
-			    	filename, export_filename);
+			    	filename, export_filename, dataset_deleted);
 			} else if ( verbosity >=1 && record[0] != 0x1A) {
 				fprintf(stderr, _("The row %i is set to 'deleted'."), i+1);
 				fprintf(stderr, "\n");

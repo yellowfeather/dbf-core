@@ -67,7 +67,8 @@ int writeDBFFooter (FILE *fp, P_DBF *p_dbf,
 int
 writeDBFLine(FILE *fp, P_DBF *p_dbf,
     const unsigned char *value, int record_length,
-    const char *in /* unused */, const char *out /* unused */)
+    const char *in /* unused */, const char *out /* unused */,
+    const unsigned int dataset_deleted /* unused */)
 {
 	if(0 > dbf_WriteRecord(op_dbf, value, record_length))
 		exit(1);
