@@ -25,6 +25,7 @@
 #include "odbf.h"
 #include "hash.h"
 #include "index.h"
+#include "import.h"
 
 static struct DB_FSIZE *fsz;
 
@@ -346,6 +347,16 @@ struct options {
 		"--hash", NULL, NULL, writeHashLine, ARG_OUTPUT, ARG_CLASS_OUTPUT,
 		"{filename} -- MD5 hash each line",
 		NULL
+	},
+	{
+		"--import", writeImportHeader, NULL, writeImportLine, ARG_OUTPUT, ARG_CLASS_OUTPUT,
+		"{filename} -- converts file into \"comma separated values\" appending business_unit_id, csv_hash, created_at, and updated_at columns",
+		NULL
+	},
+	{
+		"--business-unit-id", setBusinessUnitId, NULL, NULL, ARG_OPTION, ARG_CLASS_SET,
+		"{id} - set the value for the business_unit_id column used in the --import option",
+		"0"
 	},
 	{
 		"--index", writeIndexHeader, NULL, writeIndexLine, ARG_OUTPUT, ARG_CLASS_OUTPUT,

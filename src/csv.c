@@ -48,54 +48,11 @@ setCSVSep(FILE *fp, P_DBF *p_dbf,
 }
 /* }}} */
 
-/* writeCSVHeader() {{{
- * creates the CSV Header with the information provided by DB_FIELD
- */
-int
-writeCSVHeader (FILE *fp, P_DBF *p_dbf,
-    const char *in /* __unused */, const char *out /* __unused */)
-{
-	int i, columns;
-
-	columns = dbf_NumCols(p_dbf);
-	for (i = 0; i < columns; i++) {
-		char field_type;
-		const char *field_name;
-		int field_length, field_decimals;
-		field_type = dbf_ColumnType(p_dbf, i);
-		field_name = dbf_ColumnName(p_dbf, i);
-		field_length = dbf_ColumnSize(p_dbf, i);
-		field_decimals = dbf_ColumnDecimals(p_dbf, i);
-		if(CSVTableStructure && CSVSeparator == ',')
-			fputs("\"", fp);
-		fprintf(fp, "%s", field_name);
-		if(CSVTableStructure) {
-			fprintf(fp, ",%c", field_type);
-			switch(field_type) {
-				case 'C':
-					fprintf(fp, ",%d", field_length);
-					break;
-				case 'N':
-					fprintf(fp, ",%d,%d", field_length, field_decimals);
-					break;
-			}
-		}
-		if(CSVTableStructure && CSVSeparator == ',')
-			fputs("\"", fp);
-		if(i < columns-1)
-			putc(CSVSeparator, fp);
-	}
-	fputs("\n", fp);
-
-	return 0;
-}
-/* }}} */
-
-/* writeCSVLine {{{
+/* writeCSVValues {{{
  * creates a line in the CSV document for each data set
  */
 int
-writeCSVLine(FILE *fp, P_DBF *p_dbf,
+writeCSVValues(FILE *fp, P_DBF *p_dbf,
     const unsigned char *value, int record_length,
     const char *in /* unused */, const char *out /* unused */,
     const unsigned int dataset_deleted)
@@ -179,6 +136,61 @@ writeCSVLine(FILE *fp, P_DBF *p_dbf,
 		if(i < columns-1)
 			putc(CSVSeparator, fp);
 	}
+}
+
+/* writeCSVHeader() {{{
+ * creates the CSV Header with the information provided by DB_FIELD
+ */
+int
+writeCSVHeader (FILE *fp, P_DBF *p_dbf,
+    const char *in /* __unused */, const char *out /* __unused */)
+{
+	int i, columns;
+
+	columns = dbf_NumCols(p_dbf);
+	for (i = 0; i < columns; i++) {
+		char field_type;
+		const char *field_name;
+		int field_length, field_decimals;
+		field_type = dbf_ColumnType(p_dbf, i);
+		field_name = dbf_ColumnName(p_dbf, i);
+		field_length = dbf_ColumnSize(p_dbf, i);
+		field_decimals = dbf_ColumnDecimals(p_dbf, i);
+		if(CSVTableStructure && CSVSeparator == ',')
+			fputs("\"", fp);
+		fprintf(fp, "%s", field_name);
+		if(CSVTableStructure) {
+			fprintf(fp, ",%c", field_type);
+			switch(field_type) {
+				case 'C':
+					fprintf(fp, ",%d", field_length);
+					break;
+				case 'N':
+					fprintf(fp, ",%d,%d", field_length, field_decimals);
+					break;
+			}
+		}
+		if(CSVTableStructure && CSVSeparator == ',')
+			fputs("\"", fp);
+		if(i < columns-1)
+			putc(CSVSeparator, fp);
+	}
+	fputs("\n", fp);
+
+	return 0;
+}
+/* }}} */
+
+/* writeCSVLine {{{
+ * creates a line in the CSV document for each data set
+ */
+int
+writeCSVLine(FILE *fp, P_DBF *p_dbf,
+    const unsigned char *value, int record_length,
+    const char *in /* unused */, const char *out /* unused */,
+    const unsigned int dataset_deleted)
+{
+  writeCSVValues(fp, p_dbf, value, record_length, in, out, dataset_deleted);
 	fputs("\n", fp);
 
 	return 0;
