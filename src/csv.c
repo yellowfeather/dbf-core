@@ -65,7 +65,8 @@ writeCSVValues(FILE *fp, P_DBF *p_dbf,
 
 	for (i = 0; i < columns; i++) {
 		const unsigned char *end, *begin;
-		int isstring, isfloat;
+		int isstring, isfloat, isnumber;
+    int is_invalid_number;
 		char field_type;
 		const char *field_name;
 		int field_length, field_decimals;
@@ -77,6 +78,8 @@ writeCSVValues(FILE *fp, P_DBF *p_dbf,
 
 		isstring = field_type == 'M' || field_type == 'C';
 		isfloat = field_type == 'F' || (field_type == 'B' && dbversion == VisualFoxPro) ? 1 : 0;
+		isnumber = field_type == 'N';
+    is_invalid_number = 0;
 
 		begin = value;
 		value += field_length;
@@ -108,7 +111,11 @@ writeCSVValues(FILE *fp, P_DBF *p_dbf,
 		while (*begin == ' ' && begin != end)
 			begin++;
 
-		if (*begin != ' ') {
+    if (isnumber && (*begin == '*')) {
+        is_invalid_number = 1;
+    }
+
+		if ((*begin != ' ') && (*begin != '\0') && (is_invalid_number != 1)) {
 
 			while (*end == ' ')
 				end--;
