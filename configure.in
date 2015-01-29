@@ -3,7 +3,7 @@
 
 AC_INIT(dbf, 0.9.1, [http://dbf.berlios.de])
 AC_CONFIG_SRCDIR(src/dbf.c)
-AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+AM_INIT_AUTOMAKE
 
 AM_MAINTAINER_MODE
 AC_CONFIG_HEADER(config.h)
@@ -39,7 +39,7 @@ AC_CHECK_LIB(dbf, dbf_Open,
   AC_MSG_ERROR([libdbf not found. You will need at least libdbf 0.3.0]),
   "$DBFLIB_LIBDIR")
 
-DBFLIB_LIBS=-ldbf
+DBFLIB_LIBS = /usr/local/lib/libdbf.a
 
 
 # Checks for header files.
