@@ -13,6 +13,7 @@
  * $Id: csv.c,v 1.21 2006/04/10 15:07:21 steinm Exp $
  ***************************************************************************/
 
+#include <ctype.h>
 #include <libdbf/libdbf.h>
 #include "csv.h"
 
@@ -24,7 +25,7 @@ static char CSVEnclosure = '"';
 static char CarriageReturn = '\r';
 static char NewLine = '\n';
 
-static int CSVTableStructure = 1;
+static int CSVTableStructure = 0;
 
 /* setCSVSep() {{{
  * allows to change the separator used for CSV output
@@ -165,6 +166,8 @@ writeCSVHeader (FILE *fp, P_DBF *p_dbf,
 		field_decimals = dbf_ColumnDecimals(p_dbf, i);
 		if(CSVTableStructure && CSVSeparator == ',')
 			fputs("\"", fp);
+    char *p;
+    for (p = (char *)field_name ; *p; ++p) { *p = tolower(*p); }
 		fprintf(fp, "%s", field_name);
 		if(CSVTableStructure) {
 			fprintf(fp, ",%c", field_type);
