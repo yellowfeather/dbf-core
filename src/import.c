@@ -16,7 +16,6 @@
 #include <time.h>
 #include <libdbf/libdbf.h>
 #include "csv.h"
-#include "hash.h"
 #include "import.h"
 
 static int business_unit_id = 0;
@@ -51,7 +50,6 @@ writeImportHeader (FILE *fp, P_DBF *p_dbf,
   }
 
   fprintf(fp, "business_unit_id,");
-  fprintf(fp, "csv_hash,");
   fprintf(fp, "created_at,");
   fprintf(fp, "updated_at");
 
@@ -73,11 +71,6 @@ writeImportLine(FILE *fp, P_DBF *p_dbf,
 
     // business_unit_id
     fprintf(fp, ",%d,", business_unit_id);
-
-    // csv_hash
-    char hash[(MD5_DIGEST_LENGTH * 2) + 1];
-    generate_md5_digest(value, record_length, hash);
-    fprintf(fp, "%s,", hash);
 
     // created_at
     time_t ltime;
