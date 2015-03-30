@@ -49,6 +49,7 @@ writeImportHeader (FILE *fp, P_DBF *p_dbf,
     fprintf(fp, "%s,", field_name);
   }
 
+  fprintf(fp, "deleted,");
   fprintf(fp, "business_unit_id,");
   fprintf(fp, "created_at,");
   fprintf(fp, "updated_at");

@@ -63,6 +63,7 @@
 
 extern unsigned int verbosity;
 extern char *tablename;
+extern int show_deleted;
 
 /*
  *	FUNCTIONS

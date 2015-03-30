@@ -34,18 +34,18 @@ int
 setCSVSep(FILE *fp, P_DBF *p_dbf,
     const char *in /* __unused */, const char *separator)
 {
-	if ( separator[1] && separator[0] != 't' ) {
-		fprintf(stderr, _("Separator / Escape char ``%s'' is too long -- must be a single character."),
-		    separator);
-		fprintf(stderr, "\n");
-		return 1;
-	} else if ( separator[0] == 't' ) {
-		CSVSeparator = '\t';
-		CSVFileType = 'T';
-	} else {
-		CSVSeparator = separator[0];
-	}
-	return 0;
+    if ( separator[1] && separator[0] != 't' ) {
+        fprintf(stderr, _("Separator / Escape char ``%s'' is too long -- must be a single character."),
+            separator);
+        fprintf(stderr, "\n");
+        return 1;
+    } else if ( separator[0] == 't' ) {
+        CSVSeparator = '\t';
+        CSVFileType = 'T';
+    } else {
+        CSVSeparator = separator[0];
+    }
+    return 0;
 }
 /* }}} */
 
@@ -58,92 +58,99 @@ writeCSVValues(FILE *fp, P_DBF *p_dbf,
     const char *in /* unused */, const char *out /* unused */,
     const unsigned int dataset_deleted)
 {
-	int i, columns;
-	int needsencl;
-	const char *ptr;
+    int i, columns;
+    int needsencl;
+    const char *ptr;
 
-	columns = dbf_NumCols(p_dbf);
+    columns = dbf_NumCols(p_dbf);
 
-	for (i = 0; i < columns; i++) {
-		const unsigned char *end, *begin;
-		int isstring, isfloat, isnumber;
-    int is_invalid_number;
-		char field_type;
-		const char *field_name;
-		int field_length, field_decimals;
-		int dbversion = dbf_GetVersion(p_dbf);
-		field_type = dbf_ColumnType(p_dbf, i);
-		field_name = dbf_ColumnName(p_dbf, i);
-		field_length = dbf_ColumnSize(p_dbf, i);
-		field_decimals = dbf_ColumnDecimals(p_dbf, i);
+    for (i = 0; i < columns; i++) {
+        const unsigned char *end, *begin;
+        int isstring, isfloat, isnumber;
+        int is_invalid_number;
+        char field_type;
+        const char *field_name;
+        int field_length, field_decimals;
+        int dbversion = dbf_GetVersion(p_dbf);
+        field_type = dbf_ColumnType(p_dbf, i);
+        field_name = dbf_ColumnName(p_dbf, i);
+        field_length = dbf_ColumnSize(p_dbf, i);
+        field_decimals = dbf_ColumnDecimals(p_dbf, i);
 
-		isstring = field_type == 'M' || field_type == 'C';
-		isfloat = field_type == 'F' || (field_type == 'B' && dbversion == VisualFoxPro) ? 1 : 0;
-		isnumber = field_type == 'N';
-    is_invalid_number = 0;
+        isstring = field_type == 'M' || field_type == 'C';
+        isfloat = field_type == 'F' || (field_type == 'B' && dbversion == VisualFoxPro) ? 1 : 0;
+        isnumber = field_type == 'N';
+        is_invalid_number = 0;
 
-		begin = value;
-		value += field_length;
-		end = value - 1;
+        begin = value;
+        value += field_length;
+        end = value - 1;
 
-		/* Remove NULL chars at end of field */
-		while(end != begin && *end == '\0')
-			end--;
+        /* Remove NULL chars at end of field */
+        while(end != begin && *end == '\0')
+            end--;
 
-		/* Check if enclosure chars are needed. This is the case if
-		 * the value contains the char for separating the columns
-		 */
-		ptr = begin;
-		needsencl = 0;
-		while(!needsencl && ptr <= end) {
-			if(*ptr == CSVSeparator || *ptr == CSVEnclosure || *ptr == CarriageReturn || *ptr == NewLine)
-				needsencl = 1;
-			ptr++;
-		}
+        /* Check if enclosure chars are needed. This is the case if
+         * the value contains the char for separating the columns
+         */
+        ptr = begin;
+        needsencl = 0;
+        while(!needsencl && ptr <= end) {
+            if(*ptr == CSVSeparator || *ptr == CSVEnclosure || *ptr == CarriageReturn || *ptr == NewLine)
+                needsencl = 1;
+            ptr++;
+        }
 
-		/*
-		 * addded to keep to CSV standard:
-		 * Text fields must be enclosed by quotation marks
-		 * - berg, 2003-09-08
-		 */
-		if ( needsencl )
-			putc(CSVEnclosure, fp);
+        /*
+         * addded to keep to CSV standard:
+         * Text fields must be enclosed by quotation marks
+         * - berg, 2003-09-08
+         */
+        if ( needsencl )
+            putc(CSVEnclosure, fp);
 
-		while (*begin == ' ' && begin != end)
-			begin++;
+        while (*begin == ' ' && begin != end)
+            begin++;
 
-    if (isnumber && (*begin == '*')) {
-        is_invalid_number = 1;
+        if (isnumber && (*begin == '*')) {
+            is_invalid_number = 1;
+        }
+
+        if ((*begin != ' ') && (*begin != '\0') && (is_invalid_number != 1)) {
+
+            while (*end == ' ')
+                end--;
+
+            /* This routine must be verified in several tests */
+            if (isfloat) {
+                char *fmt = malloc(20);
+                sprintf(fmt, "%%%d.%df", field_length, field_decimals);
+                fprintf(fp, fmt, *(double *)begin);
+                begin += field_length;
+            } else {
+                do {
+                    /* mask enclosure char */
+                    if(*begin == CSVEnclosure) {
+                            putc(CSVEnclosure, fp);
+                    }
+                    putc(*begin, fp);
+                } while (begin++ < end);
+            }
+        }
+
+        if ( needsencl )
+            putc(CSVEnclosure, fp);
+
+        if (i < columns-1) {
+            putc(CSVSeparator, fp);
+        }
+        else {
+            if (show_deleted) {
+                putc(CSVSeparator, fp);
+                putc(dataset_deleted ? '1' : '0', fp);
+            }
+        }
     }
-
-		if ((*begin != ' ') && (*begin != '\0') && (is_invalid_number != 1)) {
-
-			while (*end == ' ')
-				end--;
-
-			/* This routine must be verified in several tests */
-			if (isfloat) {
-				char *fmt = malloc(20);
-				sprintf(fmt, "%%%d.%df", field_length, field_decimals);
-				fprintf(fp, fmt, *(double *)begin);
-				begin += field_length;
-			} else {
-				do {
-					/* mask enclosure char */
-					if(*begin == CSVEnclosure) {
-							putc(CSVEnclosure, fp);
-					}
-					putc(*begin, fp);
-				} while (begin++ < end);
-			}
-		}
-
-		if ( needsencl )
-			putc(CSVEnclosure, fp);
-
-		if(i < columns-1)
-			putc(CSVSeparator, fp);
-	}
 }
 
 /* writeCSVHeader() {{{
@@ -153,41 +160,48 @@ int
 writeCSVHeader (FILE *fp, P_DBF *p_dbf,
     const char *in /* __unused */, const char *out /* __unused */)
 {
-	int i, columns;
+    int i, columns;
 
-	columns = dbf_NumCols(p_dbf);
-	for (i = 0; i < columns; i++) {
-		char field_type;
-		const char *field_name;
-		int field_length, field_decimals;
-		field_type = dbf_ColumnType(p_dbf, i);
-		field_name = dbf_ColumnName(p_dbf, i);
-		field_length = dbf_ColumnSize(p_dbf, i);
-		field_decimals = dbf_ColumnDecimals(p_dbf, i);
-		if(CSVTableStructure && CSVSeparator == ',')
-			fputs("\"", fp);
+    columns = dbf_NumCols(p_dbf);
+    for (i = 0; i < columns; i++) {
+        char field_type;
+        const char *field_name;
+        int field_length, field_decimals;
+        field_type = dbf_ColumnType(p_dbf, i);
+        field_name = dbf_ColumnName(p_dbf, i);
+        field_length = dbf_ColumnSize(p_dbf, i);
+        field_decimals = dbf_ColumnDecimals(p_dbf, i);
+        if(CSVTableStructure && CSVSeparator == ',')
+            fputs("\"", fp);
     char *p;
     for (p = (char *)field_name ; *p; ++p) { *p = tolower(*p); }
-		fprintf(fp, "%s", field_name);
-		if(CSVTableStructure) {
-			fprintf(fp, ",%c", field_type);
-			switch(field_type) {
-				case 'C':
-					fprintf(fp, ",%d", field_length);
-					break;
-				case 'N':
-					fprintf(fp, ",%d,%d", field_length, field_decimals);
-					break;
-			}
-		}
-		if(CSVTableStructure && CSVSeparator == ',')
-			fputs("\"", fp);
-		if(i < columns-1)
-			putc(CSVSeparator, fp);
-	}
-	fputs("\n", fp);
+        fprintf(fp, "%s", field_name);
+        if(CSVTableStructure) {
+            fprintf(fp, ",%c", field_type);
+            switch(field_type) {
+                case 'C':
+                    fprintf(fp, ",%d", field_length);
+                    break;
+                case 'N':
+                    fprintf(fp, ",%d,%d", field_length, field_decimals);
+                    break;
+            }
+        }
+        if(CSVTableStructure && CSVSeparator == ',')
+            fputs("\"", fp);
+        if (i < columns-1) {
+            putc(CSVSeparator, fp);
+        }
+        else {
+            if (show_deleted) {
+                putc(CSVSeparator, fp);
+                fputs("deleted", fp);
+            }
+        }
+    }
+    fputs("\n", fp);
 
-	return 0;
+    return 0;
 }
 /* }}} */
 
@@ -201,9 +215,9 @@ writeCSVLine(FILE *fp, P_DBF *p_dbf,
     const unsigned int dataset_deleted)
 {
   writeCSVValues(fp, p_dbf, value, record_length, in, out, dataset_deleted);
-	fputs("\n", fp);
+    fputs("\n", fp);
 
-	return 0;
+    return 0;
 }
 /* }}} */
 
