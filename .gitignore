@@ -15,6 +15,7 @@ libtool
 stamp-h*
 .project
 .cvsignore
+autom4te.cache/
 po/POTFILES
 src/.deps/
 src/*.o
