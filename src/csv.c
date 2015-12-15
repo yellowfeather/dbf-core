@@ -138,12 +138,14 @@ writeCSVValues(FILE *fp, P_DBF *p_dbf,
                 if (fmt[1] == '.' && fmt[2] == 'E' && fmt[3] == '+') {
                     putc(fmt[0], fp);
                     int precision = fmt[4] - '0';
-                    for (int i = 0; i < precision; ++i) {
+                    int i;
+                    for (i = 0; i < precision; ++i) {
                         putc('0', fp);
                     }
                 }
                 else {
-                    for (int i = 0; i < index; ++i) {
+                    int i;
+                    for (i = 0; i < index; ++i) {
                         putc(fmt[i], fp);
                     }
                 }
