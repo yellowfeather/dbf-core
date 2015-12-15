@@ -127,7 +127,29 @@ writeCSVValues(FILE *fp, P_DBF *p_dbf,
                 sprintf(fmt, "%%%d.%df", field_length, field_decimals);
                 fprintf(fp, fmt, *(double *)begin);
                 begin += field_length;
-            } else {
+                free(fmt);
+            }
+            else if (isnumber) {
+                unsigned char *fmt = malloc(20);
+                int  index = 0;
+                do {
+                    fmt[index++] = *begin;
+                } while(begin++ < end);
+                if (fmt[1] == '.' && fmt[2] == 'E' && fmt[3] == '+') {
+                    putc(fmt[0], fp);
+                    int precision = fmt[4] - '0';
+                    for (int i = 0; i < precision; ++i) {
+                        putc('0', fp);
+                    }
+                }
+                else {
+                    for (int i = 0; i < index; ++i) {
+                        putc(fmt[i], fp);
+                    }
+                }
+                free(fmt);
+            } 
+            else {
                 do {
                     /* mask enclosure char */
                     if(*begin == CSVEnclosure) {
